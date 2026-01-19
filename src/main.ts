@@ -294,7 +294,7 @@ export default class FileNotePlugin extends Plugin {
 	 * Removes all file notes in the vault (with confirmation dialog).
 	 * Removes notes for all eligible files regardless of configured extensions.
 	 */
-	async removeAllFileNotes() {
+	removeAllFileNotes() {
 		const files = this.app.vault.getFiles().filter(f => this.isEligibleFile(f));
 		this.confirmAndRemoveFileNotes(files, 'No file notes to remove');
 	}
@@ -304,7 +304,7 @@ export default class FileNotePlugin extends Plugin {
 	 * Removes notes for all eligible files regardless of configured extensions.
 	 * @param folder - The folder to remove notes from
 	 */
-	async removeFileNotesInFolder(folder: TFolder) {
+	removeFileNotesInFolder(folder: TFolder) {
 		const files = this.app.vault.getFiles().filter(f =>
 			f.path.startsWith(folder.path + '/') && this.isEligibleFile(f)
 		);

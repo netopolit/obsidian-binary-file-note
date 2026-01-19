@@ -1,9 +1,9 @@
 {
-	"id": "file-notes-plugin",
+	"id": "file-notes",
 	"name": "File Notes",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Creates markdown notes with embedded link to the original file for non-native Obsidian file formats, including binary files (e.g., mp4, pdf, png...)",
+	"description": "Creates markdown notes with embedded link to the original file for non-native file formats, including binary files (e.g., mp4, pdf, png...)",
 	"author": "Mislav Paparella",
 	"isDesktopOnly": true
 }

@@ -1,7 +1,7 @@
 {
 	"id": "file-notes",
 	"name": "File Notes",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "0.15.0",
 	"description": "Create notes for non-native files, including binary files.",
 	"author": "Mislav Paparella",

@@ -61,12 +61,77 @@ export class FileNoteOperations {
 	}
 
 	/**
-	 * Returns the path for the file note corresponding to a source file.
+	 * Returns the base path for the file note corresponding to a source file.
+	 * Uses the notesFolder setting to determine the location:
+	 * - Empty: same folder as source file
+	 * - Starts with ./: relative subfolder (e.g., ./Notes -> Folder/Notes/file.md)
+	 * - Otherwise: central folder (e.g., Notes -> Notes/file.md)
 	 * @param file - The source file
-	 * @returns The path with the file extension replaced with .md
+	 * @returns The base note path (without conflict resolution)
 	 */
 	getNotePath(file: TFile): string {
-		return file.path.replace(/\.[^.]+$/, '.md');
+		const noteName = file.name.replace(/\.[^.]+$/, '.md');
+		const notesFolder = this.settings.notesFolder;
+
+		if (!notesFolder) {
+			// Empty: same folder as source file (original behavior)
+			return file.path.replace(/\.[^.]+$/, '.md');
+		}
+
+		if (notesFolder.startsWith('./')) {
+			// Relative subfolder: ./Notes -> parentFolder/Notes/file.md
+			const subfolder = notesFolder.slice(2);
+			const parentFolder = file.parent?.path || '';
+			return parentFolder ? `${parentFolder}/${subfolder}/${noteName}` : `${subfolder}/${noteName}`;
+		}
+
+		// Central folder: Notes -> Notes/file.md
+		return `${notesFolder}/${noteName}`;
+	}
+
+	/**
+	 * Returns a unique path for the file note, resolving conflicts in central folder mode.
+	 * For same-folder and relative-subfolder modes, returns the base path.
+	 * For central folder mode, appends (1), (2), etc. if a file with the same name already exists.
+	 * @param file - The source file
+	 * @returns A unique note path that doesn't conflict with existing files
+	 */
+	async getUniqueNotePath(file: TFile): Promise<string> {
+		const basePath = this.getNotePath(file);
+		const notesFolder = this.settings.notesFolder;
+
+		// Only apply conflict resolution for central folder mode (not empty, not relative)
+		if (!notesFolder || notesFolder.startsWith('./')) {
+			return basePath;
+		}
+
+		// Check if base path is available
+		if (!this.app.vault.getAbstractFileByPath(basePath)) {
+			return basePath;
+		}
+
+		// Find unique path by appending (1), (2), etc.
+		const nameWithoutExt = file.name.replace(/\.[^.]+$/, '');
+		let counter = 1;
+		let uniquePath: string;
+
+		do {
+			uniquePath = `${notesFolder}/${nameWithoutExt} (${counter}).md`;
+			counter++;
+		} while (this.app.vault.getAbstractFileByPath(uniquePath));
+
+		return uniquePath;
+	}
+
+	/**
+	 * Ensures the parent folder exists for the given path, creating it if necessary.
+	 * @param filePath - The file path whose parent folder should exist
+	 */
+	async ensureFolderExists(filePath: string): Promise<void> {
+		const folderPath = filePath.substring(0, filePath.lastIndexOf('/'));
+		if (folderPath && !this.app.vault.getAbstractFileByPath(folderPath)) {
+			await this.app.vault.createFolder(folderPath);
+		}
 	}
 
 	/**
@@ -85,15 +150,20 @@ export class FileNoteOperations {
 	 * @param showNotice - Whether to show a notice on success/failure
 	 */
 	async createFileNote(file: TFile, showNotice = true) {
-		const mdPath = this.getNotePath(file);
-		const exists = this.app.vault.getAbstractFileByPath(mdPath);
+		// For non-central modes, check if note already exists at base path
+		const basePath = this.getNotePath(file);
+		const notesFolder = this.settings.notesFolder;
+		const isCentralFolder = notesFolder && !notesFolder.startsWith('./');
 
-		if (exists) {
+		if (!isCentralFolder && this.app.vault.getAbstractFileByPath(basePath)) {
 			if (showNotice) new Notice('File note already exists');
 			return;
 		}
 
 		try {
+			// Get unique path (handles conflict resolution for central folder mode)
+			const mdPath = await this.getUniqueNotePath(file);
+			await this.ensureFolderExists(mdPath);
 			const content = this.getNoteContent(file);
 			await this.app.vault.create(mdPath, content);
 			if (showNotice) new Notice('Created file note');
@@ -113,16 +183,21 @@ export class FileNoteOperations {
 		let skipped = 0;
 		let failed = 0;
 
-		for (const file of files) {
-			const mdPath = this.getNotePath(file);
-			const exists = this.app.vault.getAbstractFileByPath(mdPath);
+		const notesFolder = this.settings.notesFolder;
+		const isCentralFolder = notesFolder && !notesFolder.startsWith('./');
 
-			if (exists) {
+		for (const file of files) {
+			const basePath = this.getNotePath(file);
+
+			// For non-central modes, skip if note already exists
+			if (!isCentralFolder && this.app.vault.getAbstractFileByPath(basePath)) {
 				skipped++;
 				continue;
 			}
 
 			try {
+				const mdPath = await this.getUniqueNotePath(file);
+				await this.ensureFolderExists(mdPath);
 				const content = this.getNoteContent(file);
 				await this.app.vault.create(mdPath, content);
 				success++;

@@ -50,6 +50,20 @@ Toggle this feature via:
 - **Settings** → **Hide files with notes**
 - Command palette: **Toggle files with notes visibility**
 
+### Notes Folder
+
+Control where file notes are stored with flexible folder options:
+
+| Setting | Behavior | Example |
+|---------|----------|---------|
+| *(empty)* | Same folder as source file | `Videos/clip.mp4` → `Videos/clip.md` |
+| `./Notes` | Subfolder relative to source | `Videos/clip.mp4` → `Videos/Notes/clip.md` |
+| `Notes` | Central folder for all notes | `Videos/clip.mp4` → `Notes/clip.md` |
+
+**Central folder mode** automatically resolves name conflicts by appending numbers: `report.md`, `report (1).md`, `report (2).md`, etc.
+
+Folders are created automatically when the first note is saved.
+
 ### Customizable Note Template
 
 Configure the content of created notes using a template with the `{{filename}}` placeholder.
@@ -76,6 +90,7 @@ Open command palette with `Ctrl/Cmd + P`:
 | Setting | Description | Default |
 |---------|-------------|---------|
 | File extensions | Comma-separated list of extensions (e.g., `mp4, pdf, png`) | `mp4` |
+| Notes folder | Where to store notes: empty for same folder, `./Name` for relative subfolder, `Name` for central folder | *(empty)* |
 | Auto-create notes | Automatically create notes when matching files are added | Off |
 | Hide files with notes | Hide source files in the file explorer | Off |
 | Note template | Template content using `{{filename}}` placeholder | `![[{{filename}}]]` |

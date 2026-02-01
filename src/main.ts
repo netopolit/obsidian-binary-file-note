@@ -29,7 +29,7 @@ export default class FileNotePlugin extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		this.fileOps = new FileNoteOperations(this.app, this.settings);
-		this.hiddenFiles = new HiddenFilesManager(this.app, this.settings);
+		this.hiddenFiles = new HiddenFilesManager(this.app, this.settings, this.fileOps);
 
 		this.addSettingTab(new FileNoteSettingTab(this.app, this));
 		registerCommands(this);

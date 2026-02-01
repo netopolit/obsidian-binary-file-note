@@ -1,6 +1,7 @@
-import {App, debounce} from 'obsidian';
+import {App, TFile, debounce} from 'obsidian';
 import {FileNoteSettings} from './settings';
 import {FileExplorerView} from './types';
+import {FileNoteOperations} from './file-operations';
 
 /** Delay in ms before updating hidden files after vault changes (debounce) */
 const HIDDEN_FILES_UPDATE_DELAY_MS = 100;
@@ -12,6 +13,7 @@ const HIDDEN_FILES_UPDATE_DELAY_MS = 100;
 export class HiddenFilesManager {
 	private app: App;
 	private settings: FileNoteSettings;
+	private fileOps: FileNoteOperations;
 	private hasHiddenFiles = false;
 
 	/** Debounced version of update to prevent excessive updates during bulk operations */
@@ -25,10 +27,12 @@ export class HiddenFilesManager {
 	 * Creates a new HiddenFilesManager instance.
 	 * @param app - The Obsidian app instance
 	 * @param settings - The plugin settings
+	 * @param fileOps - The file operations instance for path calculations
 	 */
-	constructor(app: App, settings: FileNoteSettings) {
+	constructor(app: App, settings: FileNoteSettings, fileOps: FileNoteOperations) {
 		this.app = app;
 		this.settings = settings;
+		this.fileOps = fileOps;
 	}
 
 	/**
@@ -61,14 +65,19 @@ export class HiddenFilesManager {
 
 		// Process each item in the file explorer
 		for (const [path, item] of Object.entries(fileExplorerView.fileItems)) {
-			// Check if a corresponding .md note exists for this path
-			const notePath = path.replace(/\.[^.]+$/, '.md');
-
-			// Skip if this is already an md file or has no extension (path unchanged by regex)
-			if (path === notePath) {
+			// Skip if this is already an md file or has no extension
+			if (path.endsWith('.md') || !path.includes('.')) {
 				continue;
 			}
 
+			// Get the file object to use fileOps.getNotePath()
+			const file = this.app.vault.getAbstractFileByPath(path);
+			if (!(file instanceof TFile)) {
+				continue;
+			}
+
+			// Check if a corresponding note exists at the calculated path
+			const notePath = this.fileOps.getNotePath(file);
 			const noteExists = this.app.vault.getAbstractFileByPath(notePath);
 
 			// Hide the source file if setting is enabled and note exists

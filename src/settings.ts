@@ -17,6 +17,8 @@ export interface FileNoteSettings {
 	hideFilesWithNotes: boolean;
 	/** Template for note content. Use {{filename}} as placeholder for the source file name */
 	noteTemplate: string;
+	/** Folder path for storing notes. Empty = same folder, ./Name = relative subfolder, Name = central folder */
+	notesFolder: string;
 }
 
 /** Default settings values */
@@ -26,7 +28,8 @@ export const DEFAULT_SETTINGS: FileNoteSettings = {
 	excludedFiles: [],
 	excludedFolders: [],
 	hideFilesWithNotes: false,
-	noteTemplate: '![[{{filename}}]]'
+	noteTemplate: '![[{{filename}}]]',
+	notesFolder: ''
 };
 
 /**
@@ -64,6 +67,31 @@ export class FileNoteSettingTab extends PluginSettingTab {
 					this.plugin.settings.fileExtensions = value;
 					await this.plugin.saveSettings();
 				}));
+
+		// Notes folder setting
+		const notesFolderSetting = new Setting(containerEl)
+			.setName('Notes folder')
+			.addText(text => text
+				.setPlaceholder('Same folder as source file')
+				.setValue(this.plugin.settings.notesFolder)
+				.onChange(async (value) => {
+					this.plugin.settings.notesFolder = value.trim();
+					await this.plugin.saveSettings();
+				}));
+
+		// Add description with examples below the setting
+		const notesFolderDesc = notesFolderSetting.descEl;
+		notesFolderDesc.appendText('Where to store file notes.');
+		notesFolderDesc.createEl('br');
+		notesFolderDesc.createEl('br');
+		notesFolderDesc.createEl('strong', {text: 'Empty'});
+		notesFolderDesc.appendText(' — same folder as source file');
+		notesFolderDesc.createEl('br');
+		notesFolderDesc.createEl('code', {text: './Notes'});
+		notesFolderDesc.appendText(' — subfolder relative to source file');
+		notesFolderDesc.createEl('br');
+		notesFolderDesc.createEl('code', {text: 'Notes'});
+		notesFolderDesc.appendText(' — central folder (conflicts auto-resolved)');
 
 		// Auto-create toggle
 		new Setting(containerEl)

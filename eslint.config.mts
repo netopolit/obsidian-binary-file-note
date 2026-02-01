@@ -20,6 +20,16 @@ export default tseslint.config(
 		},
 	},
 	...obsidianmd.configs.recommended,
+	// Stricter TypeScript rules used by Obsidian plugin submission
+	{
+		files: ['**/*.ts'],
+		rules: {
+			'@typescript-eslint/require-await': 'error',
+			'@typescript-eslint/no-floating-promises': 'error',
+			'@typescript-eslint/await-thenable': 'error',
+			'@typescript-eslint/no-misused-promises': 'error',
+		},
+	},
 	globalIgnores([
 		"node_modules",
 		"dist",

@@ -144,7 +144,7 @@ export class FileNoteOperations {
 	 * @param file - The source file
 	 * @returns A unique note path that doesn't conflict with existing files
 	 */
-	async getUniqueNotePath(file: TFile): Promise<string> {
+	getUniqueNotePath(file: TFile): string {
 		const basePath = this.getNotePath(file);
 		const notesFolder = this.settings.notesFolder;
 
@@ -214,7 +214,7 @@ export class FileNoteOperations {
 
 		try {
 			// Get unique path (handles conflict resolution for central folder mode)
-			const mdPath = await this.getUniqueNotePath(file);
+			const mdPath = this.getUniqueNotePath(file);
 			await this.ensureFolderExists(mdPath);
 			const content = this.getNoteContent(file);
 			await this.app.vault.create(mdPath, content);
@@ -242,7 +242,7 @@ export class FileNoteOperations {
 			}
 
 			try {
-				const mdPath = await this.getUniqueNotePath(file);
+				const mdPath = this.getUniqueNotePath(file);
 				await this.ensureFolderExists(mdPath);
 				const content = this.getNoteContent(file);
 				await this.app.vault.create(mdPath, content);

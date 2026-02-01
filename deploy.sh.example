@@ -1,0 +1,35 @@
+#!/bin/bash
+# Deploy built plugin to multiple Obsidian vaults
+#
+# Setup:
+#   1. Copy this file: cp deploy.sh.example deploy.sh
+#   2. Edit deploy.sh: set VAULTS_BASE and add vault names to VAULTS array
+#   3. Run: npm run deploy
+#
+# Note: deploy.sh is gitignored to keep your paths private
+
+# Base path where your vaults are stored
+VAULTS_BASE="/Users/yourname/Documents"
+
+# Vault names (the plugin path is auto-appended)
+VAULTS=(
+  # "MyVault"
+  # "AnotherVault"
+)
+
+if [ ${#VAULTS[@]} -eq 0 ]; then
+  echo "No vaults configured. Edit deploy.sh and add vault names to the VAULTS array."
+  exit 1
+fi
+
+PLUGIN_PATH=".obsidian/plugins/file-notes"
+
+for vault in "${VAULTS[@]}"; do
+  dest="$VAULTS_BASE/$vault/$PLUGIN_PATH"
+  mkdir -p "$dest"
+  cp main.js manifest.json "$dest/"
+  [ -f styles.css ] && cp styles.css "$dest/"
+  echo "Deployed to: $dest"
+done
+
+echo "Done! Deployed to ${#VAULTS[@]} vault(s)."

@@ -144,12 +144,13 @@ export class FileNoteSettingTab extends PluginSettingTab {
 			void this.plugin.saveSettings();
 		});
 
-		// Show notice when clicking disabled toggle
-		sourceFrontmatterSetting.settingEl.addEventListener('click', (e) => {
-			if (isCentralFolderMode(this.plugin.settings.notesFolder)) {
-				// Check if click was on the toggle area
-				const target = e.target as HTMLElement;
-				if (target.closest('.checkbox-container')) {
+		// Show notice when clicking disabled toggle (debounced to prevent duplicates)
+		let lastNoticeTime = 0;
+		sourceFrontmatterSetting.settingEl.addEventListener('click', () => {
+			if (sourceFrontmatterToggle.disabled) {
+				const now = Date.now();
+				if (now - lastNoticeTime > 500) {
+					lastNoticeTime = now;
 					new Notice('Required for central folder mode');
 				}
 			}

@@ -64,12 +64,26 @@ export class FileNoteOperations {
 	}
 
 	/**
+	 * Finds the note file for a given source file.
+	 * Uses source frontmatter lookup if enabled, otherwise uses path-based lookup.
+	 * @param file - The source file to find the note for
+	 * @returns The note file if found, null otherwise
+	 */
+	findNote(file: TFile): TFile | null {
+		if (this.settings.addSourceFrontmatter) {
+			return this.findNoteBySource(file.path);
+		}
+		const note = this.app.vault.getAbstractFileByPath(this.getNotePath(file));
+		return note instanceof TFile ? note : null;
+	}
+
+	/**
 	 * Finds a note in the notes folder that has the given source file in its frontmatter.
 	 * Used in central folder mode to find the correct note when names may conflict.
 	 * @param sourcePath - The source file path to search for
 	 * @returns The note file if found, null otherwise
 	 */
-	findNoteBySource(sourcePath: string): TFile | null {
+	private findNoteBySource(sourcePath: string): TFile | null {
 		const notesFolder = this.settings.notesFolder;
 		if (!notesFolder) return null;
 
@@ -193,11 +207,7 @@ export class FileNoteOperations {
 	 */
 	async createFileNote(file: TFile, showNotice = true) {
 		// Check if note already exists
-		const existingNote = this.settings.addSourceFrontmatter
-			? this.findNoteBySource(file.path)
-			: this.app.vault.getAbstractFileByPath(this.getNotePath(file));
-
-		if (existingNote) {
+		if (this.findNote(file)) {
 			if (showNotice) new Notice('File note already exists');
 			return;
 		}
@@ -225,15 +235,8 @@ export class FileNoteOperations {
 		let skipped = 0;
 		let failed = 0;
 
-		const useSourceLookup = this.settings.addSourceFrontmatter;
-
 		for (const file of files) {
-			// Check if note already exists
-			const noteExists = useSourceLookup
-				? this.findNoteBySource(file.path)
-				: this.app.vault.getAbstractFileByPath(this.getNotePath(file));
-
-			if (noteExists) {
+			if (this.findNote(file)) {
 				skipped++;
 				continue;
 			}
@@ -259,12 +262,8 @@ export class FileNoteOperations {
 	 * @param showNotice - Whether to show a notice on success/failure
 	 */
 	async removeFileNote(file: TFile, showNotice = true) {
-		// Find the note file
-		const mdFile = this.settings.addSourceFrontmatter
-			? this.findNoteBySource(file.path)
-			: this.app.vault.getAbstractFileByPath(this.getNotePath(file)) as TFile | null;
-
-		if (!mdFile || !(mdFile instanceof TFile)) {
+		const mdFile = this.findNote(file);
+		if (!mdFile) {
 			if (showNotice) new Notice('File note does not exist');
 			return;
 		}
@@ -288,15 +287,10 @@ export class FileNoteOperations {
 		let skipped = 0;
 		let failed = 0;
 
-		const useSourceLookup = this.settings.addSourceFrontmatter;
-
 		for (const file of files) {
-			// Find the note file
-			const mdFile = useSourceLookup
-				? this.findNoteBySource(file.path)
-				: this.app.vault.getAbstractFileByPath(this.getNotePath(file)) as TFile | null;
+			const mdFile = this.findNote(file);
 
-			if (!mdFile || !(mdFile instanceof TFile)) {
+			if (!mdFile) {
 				skipped++;
 				continue;
 			}
@@ -319,12 +313,8 @@ export class FileNoteOperations {
 	 * @returns Array of TFile objects for notes that exist
 	 */
 	getExistingNotes(files: TFile[]): TFile[] {
-		const useSourceLookup = this.settings.addSourceFrontmatter;
-
 		return files
-			.map(f => useSourceLookup
-				? this.findNoteBySource(f.path)
-				: this.app.vault.getAbstractFileByPath(this.getNotePath(f)))
-			.filter((f): f is TFile => f instanceof TFile);
+			.map(f => this.findNote(f))
+			.filter((f): f is TFile => f !== null);
 	}
 }

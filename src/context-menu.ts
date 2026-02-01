@@ -73,13 +73,13 @@ function buildFileContextMenu(plugin: FileNotePlugin, submenu: Menu, file: TFile
  */
 function buildFolderContextMenu(plugin: FileNotePlugin, submenu: Menu, folder: TFolder) {
 	submenu.addItem((sub: MenuItem) => {
-		sub.setTitle('Create file notes in folder')
+		sub.setTitle('Create file notes for folder')
 			.setIcon('files')
 			.onClick(() => plugin.createFileNotesInFolder(folder));
 	});
 
 	submenu.addItem((sub: MenuItem) => {
-		sub.setTitle('Remove file notes in folder')
+		sub.setTitle('Remove file notes for folder')
 			.setIcon('trash')
 			.onClick(() => plugin.removeFileNotesInFolder(folder));
 	});

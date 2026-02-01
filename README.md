@@ -34,8 +34,8 @@ This allows you to:
 ### Batch Operations
 
 - **Create notes for all files**: Creates notes for all matching files in your vault
-- **Create file notes in folder**: Right-click a folder to create notes for all matching files (including subfolders)
-- **Remove file notes in folder**: Right-click a folder to remove all file notes (with confirmation)
+- **Create file notes for folder**: Right-click a folder to create notes for all matching files (including subfolders)
+- **Remove file notes for folder**: Right-click a folder to remove all file notes (with confirmation)
 - **Remove notes from all files**: Removes all file notes from your vault (with confirmation)
 
 ### Auto-Create Notes

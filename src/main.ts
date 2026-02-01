@@ -40,7 +40,7 @@ export default class FileNotePlugin extends Plugin {
 			this.app.vault.on('create', (file) => {
 				// Auto-create notes if enabled
 				if (this.settings.autoCreate && this.shouldCreateNoteFor(file)) {
-					void this.fileOps.createFileNote(file, false);
+					this.fileOps.createFileNote(file, false).catch(e => console.error('Auto-create failed:', e));
 				}
 				this.hiddenFiles.debouncedUpdate();
 			})
@@ -71,7 +71,7 @@ export default class FileNotePlugin extends Plugin {
 	 * @param file - The source file to create a note for
 	 */
 	createFileNote(file: TFile) {
-		void this.fileOps.createFileNote(file);
+		this.fileOps.createFileNote(file).catch(e => console.error('Failed to create file note:', e));
 	}
 
 	/**
@@ -79,7 +79,7 @@ export default class FileNotePlugin extends Plugin {
 	 * @param file - The source file whose note should be removed
 	 */
 	removeFileNote(file: TFile) {
-		void this.fileOps.removeFileNote(file);
+		this.fileOps.removeFileNote(file).catch(e => console.error('Failed to remove file note:', e));
 	}
 
 	/**
@@ -253,6 +253,18 @@ export default class FileNotePlugin extends Plugin {
 	}
 
 	/**
+	 * Gets all files within a folder (recursively) that match a predicate.
+	 * @param folder - The folder to get files from
+	 * @param predicate - Filter function for files
+	 * @returns Array of matching files
+	 */
+	private getFilesInFolder(folder: TFolder, predicate: (f: TFile) => boolean): TFile[] {
+		return this.app.vault.getFiles().filter(f =>
+			f.path.startsWith(folder.path + '/') && predicate(f)
+		);
+	}
+
+	/**
 	 * Creates file notes for all matching files within a folder (recursively).
 	 * @param folder - The folder to create notes in
 	 */
@@ -262,9 +274,7 @@ export default class FileNotePlugin extends Plugin {
 			return;
 		}
 
-		const files = this.app.vault.getFiles().filter(f =>
-			f.path.startsWith(folder.path + '/') && this.shouldCreateNoteFor(f)
-		);
+		const files = this.getFilesInFolder(folder, f => this.shouldCreateNoteFor(f));
 		const result = await this.fileOps.createFileNotes(files);
 		new Notice(formatBatchResultMessage(result, 'Created'));
 	}
@@ -305,9 +315,7 @@ export default class FileNotePlugin extends Plugin {
 	 * @param folder - The folder to remove notes from
 	 */
 	removeFileNotesInFolder(folder: TFolder) {
-		const files = this.app.vault.getFiles().filter(f =>
-			f.path.startsWith(folder.path + '/') && this.isEligibleFile(f)
-		);
+		const files = this.getFilesInFolder(folder, f => this.isEligibleFile(f));
 		this.confirmAndRemoveFileNotes(files, 'No file notes to remove in this folder');
 	}
 }

@@ -33,6 +33,9 @@ export function formatBatchResultMessage(
 	return message;
 }
 
+/** Regex to extract path from wikilink format: [[path/to/file]] */
+const WIKILINK_REGEX = /^\[\[(.+)\]\]$/;
+
 /**
  * Handles file note CRUD operations.
  * Provides methods for creating, removing, and querying file notes.
@@ -61,17 +64,6 @@ export class FileNoteOperations {
 	}
 
 	/**
-	 * Checks if the current notes folder setting is central folder mode.
-	 * Central folder mode stores all notes in one folder, requiring source tracking.
-	 * Anything starting with "." is treated as a relative path (not central).
-	 * @returns True if using central folder mode
-	 */
-	isCentralFolderMode(): boolean {
-		const notesFolder = this.settings.notesFolder;
-		return !!(notesFolder && !notesFolder.startsWith('.'));
-	}
-
-	/**
 	 * Finds a note in the notes folder that has the given source file in its frontmatter.
 	 * Used in central folder mode to find the correct note when names may conflict.
 	 * @param sourcePath - The source file path to search for
@@ -82,7 +74,7 @@ export class FileNoteOperations {
 		if (!notesFolder) return null;
 
 		// Get all markdown files in the notes folder
-		const allFiles = this.app.vault.getMarkdownFiles();
+		const allFiles = this.app.vault.getMarkdownFiles() ?? [];
 		const notesInFolder = allFiles.filter(f => f.path.startsWith(notesFolder + '/'));
 
 		// Search for a note with matching source frontmatter
@@ -91,8 +83,7 @@ export class FileNoteOperations {
 			const source = cache?.frontmatter?.source as unknown;
 			if (typeof source === 'string') {
 				// Source is stored as wikilink: "[[path/to/file.pdf]]"
-				// Extract the path from the wikilink
-				const match = source.match(/^\[\[(.+)\]\]$/);
+				const match = source.match(WIKILINK_REGEX);
 				const extractedPath = match ? match[1] : source;
 				if (extractedPath === sourcePath) {
 					return note;

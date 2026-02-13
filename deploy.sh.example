@@ -3,28 +3,64 @@
 #
 # Setup:
 #   1. Copy this file: cp deploy.sh.example deploy.sh
-#   2. Edit deploy.sh: set VAULTS_BASE and add vault names to VAULTS array
-#   3. Run: npm run deploy
+#   2. Configure vaults: cp vaults.sh.example vaults.sh (if not done already)
+#   3. Edit vaults.sh: set VAULTS_BASE and add vault names to VAULTS array
+#   4. Run: npm run deploy
 #
-# Note: deploy.sh is gitignored to keep your paths private
+# Note: deploy.sh and vaults.sh are gitignored to keep your paths private
 
-# Base path where your vaults are stored
-VAULTS_BASE="/Users/yourname/Documents"
-
-# Vault names (the plugin path is auto-appended)
-VAULTS=(
-  # "MyVault"
-  # "AnotherVault"
-)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "$SCRIPT_DIR/vaults.sh" 2>/dev/null || { echo "Missing vaults.sh. Run: cp vaults.sh.example vaults.sh"; exit 1; }
 
 if [ ${#VAULTS[@]} -eq 0 ]; then
-  echo "No vaults configured. Edit deploy.sh and add vault names to the VAULTS array."
+  echo "No vaults configured. Edit vaults.sh and add vault names to the VAULTS array."
   exit 1
 fi
 
 PLUGIN_PATH=".obsidian/plugins/file-notes"
 
-for vault in "${VAULTS[@]}"; do
+# Interactive vault selection
+cursor=0
+for ((i=0; i<${#VAULTS[@]}; i++)); do checked[$i]=1; done
+
+draw_menu() {
+  for ((i=0; i<${#VAULTS[@]}; i++)); do
+    local marker="[ ]"; [[ ${checked[$i]} -eq 1 ]] && marker="[x]"
+    local arrow="  "; [[ $i -eq $cursor ]] && arrow="> "
+    printf '\e[2K%s%s %s\n' "$arrow" "$marker" "${VAULTS[$i]}"
+  done
+  printf '\e[2K\e[2m↑↓ move · space toggle · a all · n none · enter confirm\e[0m\n'
+}
+
+printf 'Select vaults to deploy:\n'
+draw_menu
+while true; do
+  IFS= read -rsn1 key
+  case "$key" in
+    $'\x1b') read -rsn2 seq
+      case "$seq" in
+        '[A') ((cursor > 0)) && ((cursor--)) ;;
+        '[B') ((cursor < ${#VAULTS[@]} - 1)) && ((cursor++)) ;;
+      esac ;;
+    ' ') ((checked[cursor] = !checked[cursor])) ;;
+    a) for ((i=0; i<${#VAULTS[@]}; i++)); do checked[$i]=1; done ;;
+    n) for ((i=0; i<${#VAULTS[@]}; i++)); do checked[$i]=0; done ;;
+    '') break ;;
+  esac
+  printf '\e[%dA' "$((${#VAULTS[@]} + 1))"
+  draw_menu
+done
+
+selected=()
+for ((i=0; i<${#VAULTS[@]}; i++)); do
+  [[ ${checked[$i]} -eq 1 ]] && selected+=("${VAULTS[$i]}")
+done
+if [ ${#selected[@]} -eq 0 ]; then
+  echo "No vaults selected."
+  exit 1
+fi
+
+for vault in "${selected[@]}"; do
   dest="$VAULTS_BASE/$vault/$PLUGIN_PATH"
   mkdir -p "$dest"
   cp main.js manifest.json "$dest/"
@@ -32,4 +68,4 @@ for vault in "${VAULTS[@]}"; do
   echo "Deployed to: $dest"
 done
 
-echo "Done! Deployed to ${#VAULTS[@]} vault(s)."
+echo "Done! Deployed to ${#selected[@]} vault(s)."

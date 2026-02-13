@@ -21,5 +21,6 @@ data.json
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
 
-# Deploy script (contains user-specific vault paths)
+# Deploy scripts (contain user-specific vault paths)
 deploy.sh
+vaults.sh

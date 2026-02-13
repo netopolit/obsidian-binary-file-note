@@ -1,0 +1,16 @@
+# Vault configuration shared by deploy.sh and seed.sh
+#
+# Setup:
+#   1. Copy this file: cp vaults.sh.example vaults.sh
+#   2. Edit vaults.sh: set VAULTS_BASE and add vault names to VAULTS array
+#
+# Note: vaults.sh is gitignored to keep your paths private
+
+# Base path where your vaults are stored
+VAULTS_BASE="/Users/yourname/Documents"
+
+# Vault names (the plugin path is auto-appended)
+VAULTS=(
+  # "MyVault"
+  # "AnotherVault"
+)

@@ -2,7 +2,7 @@
 
 A plugin for [Obsidian](https://obsidian.md) that creates markdown notes for non-native file formats (mp4, pdf, png, and other binary files), allowing you to add metadata, tags, and backlinks to any file type.
 
-![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22file-notes-plugin%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json)
+![Obsidian Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&color=%23483699&label=downloads&query=%24%5B%22file-notes%22%5D.downloads&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json)
 
 ## About
 
@@ -117,8 +117,8 @@ Open command palette with `Ctrl/Cmd + P`:
 
 ### Manual Installation
 
-1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/netopolit/obsidian-file-notes-plugin/releases)
-2. Create folder: `<vault>/.obsidian/plugins/obsidian-file-notes-plugin/`
+1. Download `main.js`, `manifest.json`, and `styles.css` from the [latest release](https://github.com/netopolit/file-notes/releases)
+2. Create folder: `<vault>/.obsidian/plugins/file-notes/`
 3. Copy downloaded files into the folder
 4. Reload Obsidian
 5. Enable in **Settings** → **Community plugins**
@@ -135,7 +135,7 @@ Open command palette with `Ctrl/Cmd + P`:
 
 ```bash
 # Clone the repository
-git clone https://github.com/netopolit/obsidian-file-notes-plugin.git
+git clone https://github.com/netopolit/file-notes.git
 
 # Install dependencies
 npm install
@@ -149,7 +149,7 @@ npm run build
 
 ## Support
 
-If you encounter issues or have feature requests, please open an issue on the [GitHub repository](https://github.com/netopolit/obsidian-file-notes-plugin/issues).
+If you encounter issues or have feature requests, please open an issue on the [GitHub repository](https://github.com/netopolit/file-notes/issues).
 
 ## License
 

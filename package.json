@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "file-notes",
 	"version": "1.0.2",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Create notes for non-native files, including binary files.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

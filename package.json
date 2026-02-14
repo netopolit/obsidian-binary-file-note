@@ -1,6 +1,6 @@
 {
 	"name": "file-notes",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "Create notes for non-native files, including binary files.",
 	"main": "main.js",
 	"type": "module",

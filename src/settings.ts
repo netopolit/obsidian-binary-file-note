@@ -1,4 +1,4 @@
-import {App, Notice, PluginSettingTab, Setting, ToggleComponent} from "obsidian";
+import {App, Notice, PluginSettingTab, Setting, TFolder, ToggleComponent} from "obsidian";
 import FileNotePlugin from "./main";
 
 /**
@@ -52,6 +52,9 @@ export class FileNoteSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	/** Datalist element for folder autocomplete suggestions */
+	private datalistEl: HTMLDataListElement | null = null;
+
 	/**
 	 * Renders the settings tab UI.
 	 * Creates controls for file extensions, auto-create toggle, hide files toggle, and note template.
@@ -89,6 +92,28 @@ export class FileNoteSettingTab extends PluginSettingTab {
 			attr: {type: 'text', placeholder: 'Same folder as source file'}
 		});
 		input.value = this.plugin.settings.notesFolder;
+
+		// Add folder suggestions on focus
+		input.addEventListener('focus', () => {
+			const folders: string[] = [];
+			this.app.vault.getAllLoadedFiles().forEach((f) => {
+				if (f instanceof TFolder && !f.isRoot()) {
+					folders.push(f.path);
+				}
+			});
+			input.setAttribute('list', 'fn-folders');
+			if (!this.datalistEl) {
+				this.datalistEl = document.createElement('datalist');
+				this.datalistEl.id = 'fn-folders';
+				document.body.appendChild(this.datalistEl);
+			}
+			this.datalistEl.innerHTML = '';
+			folders.sort().forEach((folder) => {
+				const option = document.createElement('option');
+				option.value = folder;
+				this.datalistEl!.appendChild(option);
+			});
+		});
 
 		// Add examples below input
 		const folderExamplesEl = notesFolderSetting.settingEl.createDiv({cls: 'file-note-folder-examples'});
@@ -205,5 +230,15 @@ export class FileNoteSettingTab extends PluginSettingTab {
 		examplesEl.appendText(' links to the file, ');
 		examplesEl.createEl('code', {text: '# {{filename}}'});
 		examplesEl.appendText(' heading with file name');
+	}
+
+	/**
+	 * Cleans up the datalist element when the settings tab is hidden.
+	 */
+	hide(): void {
+		if (this.datalistEl) {
+			this.datalistEl.remove();
+			this.datalistEl = null;
+		}
 	}
 }
